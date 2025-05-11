@@ -157,4 +157,4 @@ service ReservationService {
 ---
 
 ## 9. Auteur
-Projet réalisé par [VOTRE NOM] dans le cadre d'un exemple d'architecture microservices Node.js 
+Projet réalisé par [touzi baha]
