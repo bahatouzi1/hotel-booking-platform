@@ -6,6 +6,16 @@ message Reservation {
   string id = 1;
   string hotel_id = 2;
   string user_id = 3;
+  string room_type = 4;
+  string start_date = 5;
+  string end_date = 6;
+  string status = 7;
+}
+
+message ReservationRequest {
+  string hotel_id = 1;
+  string user_id = 2;
+  string room_type = 3;
   string start_date = 4;
   string end_date = 5;
   string status = 6;
@@ -20,6 +30,6 @@ message GetReservationsResponse {
 }
 
 service ReservationService {
-  rpc CreateReservation(Reservation) returns (Reservation);
+  rpc CreateReservation(ReservationRequest) returns (Reservation);
   rpc GetReservations (GetReservationsRequest) returns (GetReservationsResponse);
 }

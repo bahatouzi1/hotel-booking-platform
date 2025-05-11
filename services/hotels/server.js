@@ -6,7 +6,7 @@ const connectDB = require('./db');
 const { ObjectId } = require('mongodb');
 
 // Connexion MongoDB
-mongoose.connect('mongodb://localhost:27017/hotels');
+connectDB();
 
 // Modèle Mongoose
 const Hotel = require('./models/Hotel');
@@ -17,6 +17,7 @@ const kafka = new Kafka({
   brokers: ['localhost:9092']
 });
 const producer = kafka.producer();
+(async () => { await producer.connect(); })();
 
 // Chargement du protobuf
 const packageDefinition = protoLoader.loadSync('../../protos/hotels.proto');
@@ -47,26 +48,21 @@ const hotelService = {
   },
 
   createHotel: async (call, callback) => {
-    const { name, address, city } = call.request;
+    const { name, location, rooms } = call.request;
     try {
-      const hotelDoc = new Hotel({ name, address, city });
+      const hotelDoc = new Hotel({ name, location, rooms });
       const savedHotel = await hotelDoc.save();
-      // Envoi d'un message Kafka après la création de l'hôtel
-      await producer.connect();
       await producer.send({
         topic: 'hotels',
         messages: [
-          { value: JSON.stringify({ id: savedHotel._id.toString(), name, address, city }) }
+          { value: JSON.stringify({ id: savedHotel._id.toString(), name, location, rooms }) }
         ]
       });
-      // Adapter la réponse pour matcher le proto
       const hotel = {
         id: savedHotel._id.toString(),
         name: savedHotel.name,
-        address: savedHotel.address,
-        city: savedHotel.city,
-        rooms: [], // à adapter si vous gérez les chambres
-        location: savedHotel.location || "",
+        location: savedHotel.location,
+        rooms: savedHotel.rooms || [],
       };
       callback(null, { hotel });
     } catch (err) {

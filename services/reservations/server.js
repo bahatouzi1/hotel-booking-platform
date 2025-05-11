@@ -3,9 +3,10 @@ const protoLoader = require('@grpc/proto-loader');
 const mongoose = require('mongoose');
 const Reservation = require('./models/Reservation');
 const { Kafka } = require('kafkajs');
+const connectDB = require('./db');
 
 // Connexion MongoDB locale
-mongoose.connect('mongodb://localhost:27017/reservationsDB');
+connectDB();
 
 // Chargement du fichier protobuf
 const packageDefinition = protoLoader.loadSync('../../protos/reservations.proto');
@@ -17,15 +18,21 @@ const kafka = new Kafka({
   brokers: ['localhost:9092']
 });
 const producer = kafka.producer();
+(async () => { await producer.connect(); })();
 
 // Implémentation du service gRPC
 const reservationService = {
   createReservation: async (call, callback) => {
     try {
-      const reservation = new Reservation(call.request);
+      const reservation = new Reservation({
+        hotel_id: call.request.hotel_id,
+        user_id: call.request.user_id,
+        room_type: call.request.room_type,
+        start_date: call.request.start_date,
+        end_date: call.request.end_date,
+        status: call.request.status || 'pending',
+      });
       await reservation.save();
-      // Envoi d'un message Kafka après la création de la réservation
-      await producer.connect();
       await producer.send({
         topic: 'reservations',
         messages: [
@@ -40,11 +47,11 @@ const reservationService = {
   GetReservations: async (call, callback) => {
     try {
       const reservations = await Reservation.find();
-      // Adapter chaque réservation au format attendu par le proto
       const reservationsList = reservations.map(r => ({
         id: r._id.toString(),
         hotel_id: r.hotel_id,
         user_id: r.user_id,
+        room_type: r.room_type,
         start_date: r.start_date,
         end_date: r.end_date,
         status: r.status

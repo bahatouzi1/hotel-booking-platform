@@ -22,27 +22,52 @@ Ce projet est une plateforme de réservation d'hôtels, conçue pour illustrer l
 
 ## Architecture
 
-```
-[Client]
-   |         REST/GraphQL
-   v
-[gateway]  <--- gRPC --->  [hotels]
-   |                      [reservations]
-   |                           |
-   |---- Kafka (events) -------|
-   |                           v
-   |                      [notifications]
-   |
-   |---- REST --------------> [payments]
+- **gateway** : API Gateway (REST & GraphQL)
+- **services/hotels** : Service de gestion des hôtels (gRPC, MongoDB, Kafka)
+- **services/reservations** : Service de gestion des réservations (gRPC, MongoDB, Kafka)
+- **services/payments** : Service de paiement (REST, simulation)
+- **services/notifications** : Service de notifications (Kafka)
+- **kafka/** : Producteurs et consommateurs Kafka
+- **protos/** : Fichiers de définition gRPC
+
+## Ports utilisés
+
+- Gateway : 3000 (HTTP)
+- Hotels Service : 50051 (gRPC)
+- Reservations Service : 50052 (gRPC)
+- Payments Service : 50053 (HTTP)
+
+## Lancement des services
+
+Chaque service peut être lancé individuellement :
+
+```bash
+cd services/hotels && npm install && node server.js
+cd services/reservations && npm install && node server.js
+cd services/payments && npm install && node server.js
+cd services/notifications && npm install && node server.js
+cd gateway && npm install && node server.js
 ```
 
-- **gateway** : Point d'entrée unique (REST, GraphQL, gRPC)
-- **hotels** : Gestion des hôtels (CRUD, recherche)
-- **reservations** : Gestion des réservations
-- **payments** : Gestion des paiements (REST)
-- **notifications** : Réception des événements Kafka
-- **kafka** : Producteurs/consommateurs d'événements
-- **protos** : Schémas gRPC
+## Variables d'environnement
+
+- `HOTEL_GRPC_PORT` : Port du service gRPC Hotels (défaut : 50051)
+- `RESERVATION_GRPC_PORT` : Port du service gRPC Reservations (défaut : 50052)
+
+## Dépendances
+
+- Node.js 18+
+- MongoDB (local, ports par défaut)
+- Kafka (local, port 9092)
+
+## Docker
+
+Chaque service possède un `Dockerfile` pour faciliter le déploiement.
+
+## Remarques
+
+- Les schémas de données sont harmonisés entre les services, les modèles et les fichiers proto/GraphQL.
+- Kafka est utilisé pour la communication asynchrone entre services.
 
 ---
 

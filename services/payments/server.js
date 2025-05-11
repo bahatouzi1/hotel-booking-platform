@@ -9,6 +9,7 @@ app.use(express.json());
 //   brokers: ['localhost:9092']
 // });
 // const producer = kafka.producer();
+// (async () => { await producer.connect(); })();
 
 app.post('/pay', async (req, res) => {
   // Simuler un paiement

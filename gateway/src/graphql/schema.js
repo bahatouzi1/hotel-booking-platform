@@ -9,7 +9,7 @@ const typeDefs = gql`
   }
 
   type Room {
-    id: ID!
+    id: ID
     type: String!
     price: Float!
     available: Boolean!
@@ -17,10 +17,11 @@ const typeDefs = gql`
 
   type Reservation {
     id: ID!
-    hotel: Hotel!
-    userId: ID!
-    startDate: String!
-    endDate: String!
+    hotel_id: ID!
+    user_id: ID!
+    room_type: String
+    start_date: String!
+    end_date: String!
     status: String!
   }
 
@@ -30,7 +31,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createReservation(hotelId: ID!, userId: ID!, startDate: String!, endDate: String!): Reservation!
+    createReservation(hotel_id: ID!, user_id: ID!, room_type: String, start_date: String!, end_date: String!): Reservation!
   }
 `;
 

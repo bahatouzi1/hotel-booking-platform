@@ -21,8 +21,10 @@ const hotelProto = grpc.loadPackageDefinition(hotelPackageDef).hotels;
 const reservationProto = grpc.loadPackageDefinition(reservationPackageDef).reservations;
 
 // Création des clients gRPC
-const hotelClient = new hotelProto.HotelService('localhost:50051', grpc.credentials.createInsecure());
-const reservationClient = new reservationProto.ReservationService('localhost:50052', grpc.credentials.createInsecure());
+const HOTEL_GRPC_PORT = process.env.HOTEL_GRPC_PORT || 50051;
+const RESERVATION_GRPC_PORT = process.env.RESERVATION_GRPC_PORT || 50052;
+const hotelClient = new hotelProto.HotelService(`localhost:${HOTEL_GRPC_PORT}`, grpc.credentials.createInsecure());
+const reservationClient = new reservationProto.ReservationService(`localhost:${RESERVATION_GRPC_PORT}`, grpc.credentials.createInsecure());
 
 async function startServer() {
   const app = express();
@@ -57,7 +59,15 @@ async function startServer() {
   });
 
   app.post('/reservations', (req, res) => {
-    reservationClient.createReservation(req.body, (err, response) => {
+    const body = req.body;
+    reservationClient.createReservation({
+      hotel_id: body.hotel_id,
+      user_id: body.user_id,
+      room_type: body.room_type,
+      start_date: body.start_date,
+      end_date: body.end_date,
+      status: body.status || 'pending',
+    }, (err, response) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(response.reservation);
     });
