@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package reservations;
+
+message Reservation {
+  string id = 1;
+  string hotel_id = 2;
+  string user_id = 3;
+  string start_date = 4;
+  string end_date = 5;
+  string status = 6;
+}
+
+message GetReservationsRequest {
+  // Ajoute des filtres si besoin, sinon laisse vide
+}
+
+message GetReservationsResponse {
+  repeated Reservation reservations = 1;
+}
+
+service ReservationService {
+  rpc CreateReservation(Reservation) returns (Reservation);
+  rpc GetReservations (GetReservationsRequest) returns (GetReservationsResponse);
+}
